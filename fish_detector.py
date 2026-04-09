@@ -95,4 +95,3 @@ for epoch in range(epochs):
 
     print(confusion_matrix(all_labels, all_preds))
     print(classification_report(all_labels, all_preds, digits=4))
-    print(f"Epoch {epoch}: val acc = {correct / total:.4f}")
