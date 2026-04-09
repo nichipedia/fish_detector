@@ -89,7 +89,8 @@ for epoch in range(epochs):
             correct += (preds == labels).sum().item()
             total += labels.size(0)
             all_preds.append(preds.cpu())
-            all_labels.append(labels.cpu())
+            true = labels.argmax(dim=1)
+            all_labels.append(true.cpu())
 
     print(confusion_matrix(all_labels, all_preds))
     print(classification_report(all_labels, all_preds, digits=4))
