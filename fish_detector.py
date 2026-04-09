@@ -4,6 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.models import resnet18, ResNet18_Weights
 from torchvision import datasets, transforms
 from PIL import Image
+from sklearn.metrics import classification_report, confusion_matrix
 
 # Adjust this to where your data actually lives
 data_root = "/home/nmoran/Downloads"
@@ -91,7 +92,7 @@ model = model.to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-epochs = 100
+epochs = 10
 
 for epoch in range(epochs):
     print(f'Epoch {epoch} training')
@@ -107,6 +108,8 @@ for epoch in range(epochs):
         optimizer.step()
 
     model.eval()
+    all_preds = []
+    all_labels = []
     correct = 0
     total = 0
     print(f'Epoch {epoch} evaluating')
@@ -119,7 +122,11 @@ for epoch in range(epochs):
             preds = outputs.argmax(dim=1)
             correct += (preds == labels).sum().item()
             total += labels.size(0)
+            all_preds.append(preds.cpu())
+            all_labels.append(labels.cpu())
 
+    print(confusion_matrix(all_labels, all_preds))
+    print(classification_report(all_labels, all_preds, digits=4))
     print(f"Epoch {epoch}: val acc = {correct / total:.4f}")
     # Need to save this and maybe make a plot? Or a confusion matrix for the classes for binary case?
     # We could also do multi class for each fish type and see how that compares
