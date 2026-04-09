@@ -6,7 +6,7 @@ from torchvision import datasets, transforms
 from PIL import Image
 
 # Adjust this to where your data actually lives
-data_root = "/Users/nmoran/Downloads"
+data_root = "/home/nmoran/Downloads"
 
 # class ImageDataset(Dataset):
 #     def __init__(self, samples, transform=None):
@@ -59,13 +59,13 @@ val_dir   = f"{data_root}/val"
 train_dataset = datasets.ImageFolder(root=train_dir, transform=transforms.ToTensor())
 val_dataset   = datasets.ImageFolder(root=val_dir,   transform=transforms.ToTensor())
 
-batch_size = 32
+batch_size = 4
 
 train_loader = DataLoader(
     train_dataset,
     batch_size=batch_size,
     shuffle=True,
-    num_workers=2,
+    num_workers=1,
     pin_memory=True,
 )
 
@@ -73,7 +73,7 @@ val_loader = DataLoader(
     val_dataset,
     batch_size=batch_size,
     shuffle=False,
-    num_workers=2,
+    num_workers=1,
     pin_memory=True,
 )
 
@@ -94,6 +94,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 epochs = 100
 
 for epoch in range(epochs):
+    print(f'Epoch {epoch} training')
     model.train()
     for images, labels in train_loader:
         images = images.to(device)
@@ -108,6 +109,7 @@ for epoch in range(epochs):
     model.eval()
     correct = 0
     total = 0
+    print(f'Epoch {epoch} evaluating')
     with torch.no_grad():
         for images, labels in val_loader:
             images = images.to(device)
@@ -118,6 +120,6 @@ for epoch in range(epochs):
             correct += (preds == labels).sum().item()
             total += labels.size(0)
 
-    print(f"Epoch {epoch+1}: val acc = {correct / total:.4f}")
+    print(f"Epoch {epoch}: val acc = {correct / total:.4f}")
     # Need to save this and maybe make a plot? Or a confusion matrix for the classes for binary case?
     # We could also do multi class for each fish type and see how that compares
