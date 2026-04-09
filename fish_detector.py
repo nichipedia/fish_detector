@@ -89,8 +89,9 @@ for epoch in range(epochs):
             correct += (preds == labels).sum().item()
             total += labels.size(0)
             all_preds.append(preds.cpu())
-            true = labels.argmax(dim=1)
-            all_labels.append(true.cpu())
+            all_labels.append(labels.cpu())
+    all_preds = torch.cat(all_preds).numpy()
+    all_labels = torch.cat(all_labels).numpy()
 
     print(confusion_matrix(all_labels, all_preds))
     print(classification_report(all_labels, all_preds, digits=4))
