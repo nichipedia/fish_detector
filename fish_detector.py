@@ -6,28 +6,8 @@ from torchvision import datasets, transforms
 from PIL import Image
 from sklearn.metrics import classification_report, confusion_matrix
 
-# Adjust this to where your data actually lives
 data_root = "/home/nmoran/Downloads"
 
-# class ImageDataset(Dataset):
-#     def __init__(self, samples, transform=None):
-#         self.samples = samples
-#         self.transform = transform
-
-#     def __len__(self):
-#         return len(self.samples)
-
-#     def __getitem__(self, idx):
-#         image_path = self.samples[idx]
-#         label = None
-#         if "nofish" in image_path:
-#           label = 0
-#         else:
-#           label = 1
-#         image = Image.open(image_path).convert("RGB")
-#         if self.transform:
-#             image = self.transform(image)
-#         return image, label
 
 def build_model(num_classes, pretrained=True):
     weights = ResNet18_Weights.DEFAULT if pretrained else None
@@ -35,24 +15,10 @@ def build_model(num_classes, pretrained=True):
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     return model, weights
 
-
-# Need to bring in traininger data here, have train and val samples.
-# Can load these from Google Drive. If done correctly, should just work with the code below.
-
 num_classes = 2
 model, weights = build_model(num_classes, pretrained=True)
 
 transform = weights.transforms() if weights is not None else None
-
-# train_transform = transforms.Compose([
-#     transform,
-#     transforms.ToTensor(),
-# ])
-
-# val_transform = transforms.Compose([
-#     transform,
-#     transforms.ToTensor(),
-# ])
 
 train_dir = f"{data_root}/train"
 val_dir   = f"{data_root}/val"
@@ -92,7 +58,7 @@ model = model.to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-epochs = 10
+epochs = 5
 
 for epoch in range(epochs):
     print(f'Epoch {epoch} training')
@@ -128,5 +94,3 @@ for epoch in range(epochs):
     print(confusion_matrix(all_labels, all_preds))
     print(classification_report(all_labels, all_preds, digits=4))
     print(f"Epoch {epoch}: val acc = {correct / total:.4f}")
-    # Need to save this and maybe make a plot? Or a confusion matrix for the classes for binary case?
-    # We could also do multi class for each fish type and see how that compares
