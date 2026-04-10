@@ -27,7 +27,7 @@ val_dir   = f"{data_root}/multi_val"
 train_dataset = datasets.ImageFolder(root=train_dir, transform=weights.transforms())
 val_dataset   = datasets.ImageFolder(root=val_dir,   transform=weights.transforms())
 
-batch_size = 32
+batch_size = 128
 
 train_loader = DataLoader(
     train_dataset,
@@ -59,7 +59,7 @@ model = model.to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-epochs = 5
+epochs = 20
 
 for epoch in range(epochs):
     print(f'Epoch {epoch} training')
@@ -95,4 +95,4 @@ for epoch in range(epochs):
     all_labels = torch.cat(all_labels).numpy()
 
     print(confusion_matrix(all_labels, all_preds))
-    print(classification_report(all_labels, all_preds, digits=4))
+    print(classification_report(all_labels, all_preds, digits=4, zero_division=0))
