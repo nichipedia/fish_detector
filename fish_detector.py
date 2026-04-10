@@ -23,10 +23,10 @@ transform = weights.transforms() if weights is not None else None
 train_dir = f"{data_root}/train"
 val_dir   = f"{data_root}/val"
 
-train_dataset = datasets.ImageFolder(root=train_dir, transform=transforms.ToTensor())
-val_dataset   = datasets.ImageFolder(root=val_dir,   transform=transforms.ToTensor())
+train_dataset = datasets.ImageFolder(root=train_dir, transform=weights.transforms())
+val_dataset   = datasets.ImageFolder(root=val_dir,   transform=weights.transforms())
 
-batch_size = 4
+batch_size = 32
 
 train_loader = DataLoader(
     train_dataset,
