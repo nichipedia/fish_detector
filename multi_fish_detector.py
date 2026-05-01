@@ -1,10 +1,16 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torchvision.models import resnet18, ResNet18_Weights
 from torchvision import datasets, transforms
 from PIL import Image
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.preprocessing import label_binarize
+from sklearn.metrics import roc_curve, auc
+import matplotlib.pyplot as plt
+from datetime import datetime
+import os
 
 data_root = "/home/nmoran/Downloads"
 
@@ -77,6 +83,7 @@ for epoch in range(epochs):
     model.eval()
     all_preds = []
     all_labels = []
+    all_probs = []
     correct = 0
     total = 0
     print(f'Epoch {epoch} evaluating')
@@ -86,13 +93,43 @@ for epoch in range(epochs):
             labels = labels.to(device)
 
             outputs = model(images)
+            probs = F.softmax(outputs, dim=1)
             preds = outputs.argmax(dim=1)
             correct += (preds == labels).sum().item()
             total += labels.size(0)
             all_preds.append(preds.cpu())
             all_labels.append(labels.cpu())
+            all_probs.append(probs.cpu())
     all_preds = torch.cat(all_preds).numpy()
     all_labels = torch.cat(all_labels).numpy()
+    all_probs = torch.cat(all_probs).numpy()
 
     print(confusion_matrix(all_labels, all_preds))
     print(classification_report(all_labels, all_preds, digits=4, zero_division=0))
+
+# Binarize labels
+y_bin = label_binarize(all_labels, classes=list(range(num_classes)))
+
+fpr = {}
+tpr = {}
+roc_auc = {}
+
+for i in range(num_classes):
+    fpr[i], tpr[i], _ = roc_curve(y_bin[:, i], all_probs[:, i])
+    roc_auc[i] = auc(fpr[i], tpr[i])
+
+# Plot
+plt.figure()
+for i in range(num_classes):
+    plt.plot(fpr[i], tpr[i], label=f"Class {i} (AUC = {roc_auc[i]:.2f})")
+
+plt.plot(fpr, tpr, label=f'AUC = {roc_auc}')
+plt.plot([0, 1], [0, 1], "k--")
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title(f"ROC Curve (Epoch {epoch})")
+plt.legend()
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+file = os.path.join('./results', f'binary_weights_roc_{timestamp}.png')
+plt.savefig(file)
+plt.close()
