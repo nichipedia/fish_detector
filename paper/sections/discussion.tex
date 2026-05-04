@@ -1,0 +1,49 @@
+\section{Discussion and Results}
+
+Plotting loss against training epochs has a logarithmic shape to it. Converging around 0.20 loss.
+It quickly converged: within 20 epoch. See figure \ref{fig:loss_plot}.
+
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{./figures/loss_plot.png}
+    \caption{Plot of Loss vs Training Epoch}
+\label{fig:loss_plot}
+\end{figure}
+
+The model was evaluated with the provided test samples. 
+See figure \ref{fig:eval} for code.
+Both samples were predicted as the 0 class.
+See figure \ref{fig:pred_log}
+This gave a accuracy of 0.5 for testing. 
+There are several reasons for this low accuracy.
+Imbalanced training data, network architecture, learning rate, or other factors.
+
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{./figures/evaluation.png}
+    \caption{Snippet of Test Sample prediction code.}
+\label{fig:pred_log}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{./figures/prediction.png}
+    \caption{Log of test sample prediction.}
+\label{fig:eval}
+\end{figure}
+
+Several approaches were attempted to improve prediction.
+Training epochs were increased, but the model converged quickly to a loss of 0.2 regardless of how many epochs were used.
+Different network architectures were attempted. Adding nodes and changing the activation function did not yield better results.
+Changing the learning rate created fluctuation in the loss graph, but it also did not help with prediction. 
+Adam was attempted instead of SGD but this did increase prediction results. 
+Additional samples were also added, but this did not give a better prediction result.
+//
+
+The point of this assignment was to model the logical AND. 
+The implementation described in this report performed poorly on the provided test samples.
+It is possible that a more simple model will be better for this limited problem.
+The results found is that a Neural Network architecture following the parameters described in this assignment did not perform well for modeling the logical AND.
+The code for this project can be found on Google Collab Lab at \href{https://colab.research.google.com/drive/1SlWjzLfr9ndw7NioDr7yHefMp0X0A_Np?usp=sharing}{Nicholas' Google Collab Link}.
