@@ -1,0 +1,61 @@
+\section{Technical Details}
+
+The model was created using pytorch in the Google Collab Lab environment. 
+The dataset was constructed in memory and then a logical AND was applied to create labels.
+The ReLU~\ref{fig:relu-eq} was used for the activation function and MSE~\ref{fig:mse-loss-eq} was used for the loss function.
+Stochastic Gradient Decent was used for optimization.
+Training was performed with a learning rate of 0.03, 100 epochs, and a loss threshold of 0.10.
+
+
+\begin{figure}[ht]
+  \centering
+  \begin{equation}
+    \mathrm{ReLU}(x) = \max(0, x)
+  \end{equation}
+  \caption{Definition of the ReLU activation function}
+  \label{fig:relu-eq}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \begin{equation}
+    \mathrm{MSE}(y, \hat{y}) =
+    \frac{1}{n} \sum_{i=1}^{n} \bigl(y_i - \hat{y}_i\bigr)^2
+  \end{equation}
+  \caption{Mean Squared Error (MSE) loss function}
+  \label{fig:mse-loss-eq}
+\end{figure}
+
+Training was performed using forward propagation. The below formulas demonstrate the forward propagation matrix operations.
+The weights are multiplied with the input features and a bias is added. A activation function is then applied to that operation to introduce non-linearity.
+Each subsequent layer follows this process using the previous activations.
+The output layer creates a prediction. The activation here can be different than previous layers. For this model ReLU was utilized.
+
+
+\begin{align}
+z^{(1)} &= W^{(1)} x + b^{(1)}, \\
+a^{(1)} &= \sigma\!\bigl(z^{(1)}\bigr), \\
+z^{(2)} &= W^{(2)} a^{(1)} + b^{(2)}, \\
+\hat{y} &= f\!\bigl(z^{(2)}\bigr),
+\end{align}
+
+The model weights and bias' were initialized with a random distribution. 
+Training was performed in a loop and terminated on a epoch or a loss threshold.
+If the loss dropped below a stated threshold, training ceases to save time.
+The epoch termination is for when the model converges.
+Training only on a loss threshold can create a infinite loop if the convergence is higher than the threshold.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.8\linewidth]{./figures/x_tensor.png}
+    \caption{Screen shot of initialization of weights and bias', dataset and label creation, and model organization.}
+    \label{fig:init}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{./figures/training.png}
+    \caption{Screen shot of training loop and print statements.}
+\label{fig:training}
+\end{figure}
+
