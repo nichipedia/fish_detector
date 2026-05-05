@@ -33,6 +33,7 @@ val_dir   = f"{data_root}/val"
 train_dataset = datasets.ImageFolder(root=train_dir, transform=weights.transforms())
 val_dataset   = datasets.ImageFolder(root=val_dir,   transform=weights.transforms())
 
+class_names = train_dataset.classes
 batch_size = 128
 
 train_loader = DataLoader(
@@ -64,12 +65,13 @@ model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-
+train_loss = []
 
 epochs = 2
 
 for epoch in range(epochs):
     print(f'Epoch {epoch} training')
+    epoch_loss = 0
     model.train()
     for images, labels in train_loader:
         images = images.to(device)
@@ -79,6 +81,7 @@ for epoch in range(epochs):
         outputs = model(images)
         loss = criterion(outputs, labels)
         loss.backward()
+        epoch_loss += loss.item()
         optimizer.step()
 
     model.eval()
@@ -87,6 +90,8 @@ for epoch in range(epochs):
     all_probs = []
     correct = 0
     total = 0
+    epoch_loss /= len(train_loader)
+    train_loss.append(epoch_loss)
     print(f'Epoch {epoch} evaluating')
     with torch.no_grad():
         for images, labels in val_loader:
@@ -136,4 +141,14 @@ plt.legend()
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 file = os.path.join('./results', f'binary_weights_roc_{timestamp}.png')
 plt.savefig(file)
+
+plt.figure()
+plt.plot(train_loss)
+plt.title("Training Loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+file = os.path.join('./results/loss', f'binary_weights_loss_{timestamp}.png')
+plt.savefig(file)
+
 plt.close()
