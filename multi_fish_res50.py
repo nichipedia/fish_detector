@@ -47,7 +47,7 @@ sampler = WeightedRandomSampler(
 )
 
 class_names = train_dataset.classes
-batch_size = 128
+batch_size = 32
 
 train_loader = DataLoader(
     train_dataset,
