@@ -16,7 +16,9 @@ data_root = "/home/nmoran/Downloads"
 
 num_classes = 17
 
-def build_model(num_classes, pretrained=True):
+has_weights = False
+
+def build_model(num_classes, pretrained=False):
     weights = ResNet18_Weights.DEFAULT if pretrained else None
     model = resnet18(weights=weights)
     model.fc = nn.Linear(model.fc.in_features, num_classes)
@@ -176,6 +178,12 @@ for i in range(num_classes):
     fpr[i], tpr[i], _ = roc_curve(y_bin[:, i], all_probs[:, i])
     roc_auc[i] = auc(fpr[i], tpr[i])
 
+weight_string = None
+if has_weights:
+    weight_string = 'weights'
+else:
+    weight_string = 'noweights'
+
 # Plot
 plt.figure(figsize=(12,8))
 for i in range(num_classes):
@@ -187,7 +195,7 @@ plt.ylabel("True Positive Rate")
 plt.title(f"ROC Curve Res18")
 plt.legend()
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-file = os.path.join('./results/roc', f'res18fish_weights_roc_{timestamp}.png')
+file = os.path.join('./results/roc', f'res18fish_{weight_string}_roc_{timestamp}.png')
 plt.savefig(file, dpi=300)
 
 plt.figure(figsize=(12,8))
@@ -196,14 +204,14 @@ plt.title("Training Loss")
 plt.xlabel("Epochs")
 plt.ylabel("Loss")
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-file = os.path.join('./results/loss', f'res18fish_weights_loss_{timestamp}.png')
+file = os.path.join('./results/loss', f'res18fish_{weight_string}_loss_{timestamp}.png')
 plt.savefig(file, dpi=300)
 
 plt.figure(figsize=(20,12))
 disp = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=class_names)
 disp.plot()
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-file = os.path.join('./results/confusion', f'res18fish_weights_cm_{timestamp}.png')
+file = os.path.join('./results/confusion', f'res18fish_{weight_string}_cm_{timestamp}.png')
 plt.savefig(file, dpi=300)
 
 
