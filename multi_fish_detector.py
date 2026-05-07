@@ -163,7 +163,46 @@ val_preds = torch.cat(val_preds).numpy()
 val_labels = torch.cat(val_labels).numpy()
 
 cm = confusion_matrix(val_labels, val_preds)
-print(classification_report(val_labels, val_preds, digits=5, target_names=class_names, zero_division=0))
+report = classification_report(val_labels, val_preds, digits=5, target_names=class_names, zero_division=0, output_dict=True)
+
+# Calculate TP, FP, FN, TN per class
+FP = cm.sum(axis=0) - np.diag(cm)
+FN = cm.sum(axis=1) - np.diag(cm)
+TP = np.diag(cm)
+TN = cm.sum() - (FP + FN + TP)
+
+# Convert to float for metric calculations
+FP = FP.astype(float)
+FN = FN.astype(float)
+TP = TP.astype(float)
+TN = TN.astype(float)
+
+# Calculate rates per class
+TPR = TP / (TP + FN)  # Sensitivity/Recall
+TNR = TN / (TN + FP)  # Specificity
+PPV = TP / (TP + FP)  # Precision
+FPR = FP / (FP + TN)  # False Positive Rate
+
+summary = {
+    'accuracy': report['accuracy'],
+    'macro_f1': report['macro avg']['f1-score'],
+    'weighted_f1': report['weighted avg']['f1-score'],
+    'avg_TPR': TPR.mean(),
+    'avg_FPR': FPR.mean()
+}
+
+print(f"{'Metric':<20} {'Value':>10}")
+print("-" * 30)
+
+print(f"{'FP':<20} {summary['macro_f1']:>10.4f}")
+print(f"{'FN':<20} {summary['macro_f1']:>10.4f}")
+print(f"{'TP':<20} {summary['macro_f1']:>10.4f}")
+print(f"{'TN':<20} {summary['macro_f1']:>10.4f}")
+print(f"{'Accuracy':<20} {summary['accuracy']:>10.4f}")
+print(f"{'Macro F1':<20} {summary['macro_f1']:>10.4f}")
+print(f"{'Weighted F1':<20} {summary['weighted_f1']:>10.4f}")
+print(f"{'Avg TPR (Recall)':<20} {summary['avg_TPR']:>10.4f}")
+print(f"{'Avg FPR':<20} {summary['avg_FPR']:>10.4f}")
 
 # Binarize labels
 all_probs = torch.cat(all_probs).numpy()
@@ -210,6 +249,7 @@ plt.savefig(file, dpi=300)
 plt.figure(figsize=(20,12))
 disp = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=class_names)
 disp.plot()
+plt.tight_layout()
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 file = os.path.join('./results/confusion', f'res18fish_{weight_string}_cm_{timestamp}.png')
 plt.savefig(file, dpi=300)
