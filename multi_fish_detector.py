@@ -8,6 +8,7 @@ from PIL import Image
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_curve, auc
+import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 import os
@@ -194,10 +195,10 @@ summary = {
 print(f"{'Metric':<20} {'Value':>10}")
 print("-" * 30)
 
-print(f"{'FP':<20} {summary['macro_f1']:>10.4f}")
-print(f"{'FN':<20} {summary['macro_f1']:>10.4f}")
-print(f"{'TP':<20} {summary['macro_f1']:>10.4f}")
-print(f"{'TN':<20} {summary['macro_f1']:>10.4f}")
+print(f"{'FP':<20} {FP:>10.4f}")
+print(f"{'FN':<20} {FN:>10.4f}")
+print(f"{'TP':<20} {TP:>10.4f}")
+print(f"{'TN':<20} {TN:>10.4f}")
 print(f"{'Accuracy':<20} {summary['accuracy']:>10.4f}")
 print(f"{'Macro F1':<20} {summary['macro_f1']:>10.4f}")
 print(f"{'Weighted F1':<20} {summary['weighted_f1']:>10.4f}")
@@ -249,6 +250,7 @@ plt.savefig(file, dpi=300)
 plt.figure(figsize=(20,12))
 disp = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=class_names)
 disp.plot()
+plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 file = os.path.join('./results/confusion', f'res18fish_{weight_string}_cm_{timestamp}.png')
