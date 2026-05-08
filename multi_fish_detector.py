@@ -14,6 +14,20 @@ from datetime import datetime
 import os
 
 def main():
+
+    num_classes = 17
+
+    has_weights = False
+
+    def build_model(num_classes, pretrained=True):
+        weights = ResNet18_Weights.DEFAULT if pretrained else None
+        model = resnet18(weights=weights)
+        model.fc = nn.Linear(model.fc.in_features, num_classes)
+        return model, weights
+
+
+    model, weights = build_model(num_classes, pretrained=has_weights)
+
     device = None
     data_root = None
     workers = None
@@ -31,28 +45,15 @@ def main():
     print("Using device:", device)
     model = model.to(device)
 
-    num_classes = 17
-
-    has_weights = False
-
-    def build_model(num_classes, pretrained=True):
-        weights = ResNet18_Weights.DEFAULT if pretrained else None
-        model = resnet18(weights=weights)
-        model.fc = nn.Linear(model.fc.in_features, num_classes)
-        return model, weights
-
-
-    model, weights = build_model(num_classes, pretrained=has_weights)
-
-    transform = weights.transforms() if weights is not None else None
+    transform = weights.transforms() if weights is not None else ResNet18_Weights.DEFAULT.transforms()
 
     train_dir = f"{data_root}/multi_train"
     test_dir = f"{data_root}/multi_train"
     val_dir   = f"{data_root}/multi_val"
 
-    train_dataset = datasets.ImageFolder(root=train_dir, transform=weights.transforms())
-    test_dataset = datasets.ImageFolder(root=test_dir, transform=weights.transforms())
-    val_dataset   = datasets.ImageFolder(root=val_dir,   transform=weights.transforms())
+    train_dataset = datasets.ImageFolder(root=train_dir, transform=transform)
+    test_dataset = datasets.ImageFolder(root=test_dir, transform=transform)
+    val_dataset   = datasets.ImageFolder(root=val_dir,   transform=transform)
 
     targets = torch.tensor(train_dataset.targets)
     class_counts = torch.bincount(targets)
