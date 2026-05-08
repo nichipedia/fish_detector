@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
-from torchvision.models import resnet50, ResNet50_Weights
+from torchvision.models import densenet121, DenseNet121_Weights
 from torchvision import datasets, transforms
 from PIL import Image
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
@@ -17,12 +17,12 @@ def main():
 
     num_classes = 17
 
-    has_weights = True
+    has_weights = False
 
     def build_model(num_classes, pretrained=True):
-        weights = ResNet50_Weights.DEFAULT if pretrained else None
-        model = resnet50(weights=weights)
-        model.fc = nn.Linear(model.fc.in_features, num_classes)
+        weights = DenseNet121_Weights.DEFAULT if pretrained else None
+        model = densenet121(weights=weights)
+        model.classifier = nn.Linear(model.classifier.in_features, num_classes)
         return model, weights
 
 
@@ -48,27 +48,7 @@ def main():
     print("Using device:", device)
     model = model.to(device)
 
-    transform = weights.transforms() if weights is not None else ResNet50_Weights.DEFAULT.transforms()
-    train_transforms = transforms.Compose([
-            transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
-                transforms.RandomHorizontalFlip(p=0.5),
-
-                    transforms.ColorJitter(
-                                brightness=0.2,
-                                        contrast=0.2,
-                                                saturation=0.2,
-                                                        hue=0.05
-                                                            ),
-
-                        transforms.RandomRotation(10),
-
-                            transforms.ToTensor(),
-
-                                transforms.Normalize(
-                                            mean=[0.485, 0.456, 0.406],
-                                                    std=[0.229, 0.224, 0.225]
-                                                        )
-                                ])
+    transform = weights.transforms() if weights is not None else DenseNet121_Weights.DEFAULT.transforms()
 
     train_dir = f"{data_root}/multi_train"
     test_dir = f"{data_root}/multi_train"
@@ -250,6 +230,8 @@ def main():
     else:
         weight_string = 'noweights'
 
+    model_name = 'DenseNet'
+
 # Plot
     plt.figure(figsize=(12,8))
     for i in range(num_classes):
@@ -261,7 +243,7 @@ def main():
     plt.title(f"ROC Curve Res18")
     plt.legend()
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    file = os.path.join('./results/roc', f'res18fish_{weight_string}_roc_{timestamp}.png')
+    file = os.path.join('./results/roc', f'{model_name}fish_{weight_string}_roc_{timestamp}.png')
     plt.savefig(file, dpi=300)
 
     plt.figure(figsize=(12,8))
@@ -270,7 +252,7 @@ def main():
     plt.xlabel("Epochs")
     plt.ylabel("Loss")
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    file = os.path.join('./results/loss', f'res18fish_{weight_string}_loss_{timestamp}.png')
+    file = os.path.join('./results/loss', f'{model_name}fish_{weight_string}_loss_{timestamp}.png')
     plt.savefig(file, dpi=300)
 
     plt.figure(figsize=(20,12))
@@ -279,7 +261,7 @@ def main():
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    file = os.path.join('./results/confusion', f'res18fish_{weight_string}_cm_{timestamp}.png')
+    file = os.path.join('./results/confusion', f'{model_name}fish_{weight_string}_cm_{timestamp}.png')
     plt.savefig(file, dpi=300)
 
 
