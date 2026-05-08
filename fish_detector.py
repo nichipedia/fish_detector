@@ -5,12 +5,13 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.models import resnet18, ResNet18_Weights
 from torchvision import datasets, transforms
 from PIL import Image
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 from datetime import datetime
 import os
+import numpy as np
 
 
 data_root = "/home/nmoran/Downloads"
@@ -28,9 +29,11 @@ model, weights = build_model(num_classes, pretrained=True)
 transform = weights.transforms() if weights is not None else None
 
 train_dir = f"{data_root}/train"
+test_dir = f"{data_root}/test"
 val_dir   = f"{data_root}/val"
 
 train_dataset = datasets.ImageFolder(root=train_dir, transform=weights.transforms())
+test_dataset = datasets.ImageFolder(root=test_dir, transform=weights.transforms())
 val_dataset   = datasets.ImageFolder(root=val_dir,   transform=weights.transforms())
 
 class_names = train_dataset.classes
@@ -40,7 +43,15 @@ train_loader = DataLoader(
     train_dataset,
     batch_size=batch_size,
     shuffle=True,
-    num_workers=1,
+    num_workers=16,
+    pin_memory=True,
+)
+
+test_loader = DataLoader(
+    test_dataset,
+    batch_size=batch_size,
+    shuffle=True,
+    num_workers=16,
     pin_memory=True,
 )
 
@@ -48,7 +59,7 @@ val_loader = DataLoader(
     val_dataset,
     batch_size=batch_size,
     shuffle=False,
-    num_workers=1,
+    num_workers=16,
     pin_memory=True,
 )
 
@@ -67,16 +78,17 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 train_loss = []
 
-epochs = 2
+epochs = 12
+all_probs = []
+all_labels = []
 
 for epoch in range(epochs):
     print(f'Epoch {epoch} training')
-    epoch_loss = 0
     model.train()
+    epoch_loss = 0
     for images, labels in train_loader:
         images = images.to(device)
         labels = labels.to(device)
-
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
@@ -85,16 +97,16 @@ for epoch in range(epochs):
         optimizer.step()
 
     model.eval()
-    all_preds = []
-    all_labels = []
-    all_probs = []
-    correct = 0
-    total = 0
+    epoch_preds = []
+    epoch_labels = []
+    epoch_probs = []
     epoch_loss /= len(train_loader)
     train_loss.append(epoch_loss)
+    correct = 0
+    total = 0
     print(f'Epoch {epoch} evaluating')
     with torch.no_grad():
-        for images, labels in val_loader:
+        for images, labels in test_loader:
             images = images.to(device)
             labels = labels.to(device)
 
@@ -103,15 +115,85 @@ for epoch in range(epochs):
             preds = outputs.argmax(dim=1)
             correct += (preds == labels).sum().item()
             total += labels.size(0)
-            all_preds.append(preds.cpu())
+            epoch_preds.append(preds.cpu())
+            epoch_labels.append(labels.cpu())
+            epoch_probs.append(probs.cpu())
             all_labels.append(labels.cpu())
             all_probs.append(probs.cpu())
-    all_preds = torch.cat(all_preds).numpy()
-    all_labels = torch.cat(all_labels).numpy()
-    all_probs = torch.cat(all_probs).numpy()
+    epoch_preds = torch.cat(epoch_preds).numpy()
+    epoch_labels = torch.cat(epoch_labels).numpy()
+    epoch_probs = torch.cat(epoch_probs).numpy()
 
-    print(confusion_matrix(all_labels, all_preds))
-    print(classification_report(all_labels, all_preds, digits=4))
+    print(confusion_matrix(epoch_labels, epoch_preds))
+    print(classification_report(epoch_labels, epoch_preds, digits=5, target_names=class_names, zero_division=0))
+
+
+
+val_preds = []
+val_labels = []
+correct = 0
+total = 0
+print(f'Running Validation')
+with torch.no_grad():
+    for images, labels in val_loader:
+        images = images.to(device)
+        labels = labels.to(device)
+
+        outputs = model(images)
+        preds = outputs.argmax(dim=1)
+        correct += (preds == labels).sum().item()
+        total += labels.size(0)
+        val_preds.append(preds.cpu())
+        val_labels.append(labels.cpu())
+val_preds = torch.cat(val_preds).numpy()
+val_labels = torch.cat(val_labels).numpy()
+
+cm = confusion_matrix(val_labels, val_preds)
+report = classification_report(val_labels, val_preds, digits=5, target_names=class_names, zero_division=0, output_dict=True)
+
+
+# Calculate TP, FP, FN, TN per class
+FP = cm.sum(axis=0) - np.diag(cm)
+FN = cm.sum(axis=1) - np.diag(cm)
+TP = np.diag(cm)
+TN = cm.sum() - (FP + FN + TP)
+
+# Convert to float for metric calculations
+FP = FP.astype(float)
+FN = FN.astype(float)
+TP = TP.astype(float)
+TN = TN.astype(float)
+
+# Calculate rates per class
+TPR = TP / (TP + FN)  # Sensitivity/Recall
+TNR = TN / (TN + FP)  # Specificity
+PPV = TP / (TP + FP)  # Precision
+FPR = FP / (FP + TN)  # False Positive Rate
+
+summary = {
+    'accuracy': report['accuracy'],
+    'macro_f1': report['macro avg']['f1-score'],
+    'weighted_f1': report['weighted avg']['f1-score'],
+    'avg_TPR': TPR.mean(),
+    'avg_FPR': FPR.mean()
+}
+
+print(f"{'Metric':<20} {'Value':>10}")
+print("-" * 30)
+
+print(f"{'FP':<20} {FP}")
+print(f"{'FN':<20} {FN}")
+print(f"{'TP':<20} {TP}")
+print(f"{'TN':<20} {TN}")
+print(f"{'Accuracy':<20} {summary['accuracy']:>10.4f}")
+print(f"{'Macro F1':<20} {summary['macro_f1']:>10.4f}")
+print(f"{'Weighted F1':<20} {summary['weighted_f1']:>10.4f}")
+print(f"{'Avg TPR (Recall)':<20} {summary['avg_TPR']:>10.4f}")
+print(f"{'Avg FPR':<20} {summary['avg_FPR']:>10.4f}")
+
+# Binarize labels
+all_probs = torch.cat(all_probs).numpy()
+all_labels = torch.cat(all_labels).numpy()
 
 # Binarize labels
 y_bin = label_binarize(all_labels, classes=list(range(num_classes)))
@@ -126,6 +208,7 @@ y_bin = label_binarize(all_labels, classes=list(range(num_classes)))
 
 fpr, tpr, _ = roc_curve(all_labels, all_probs[:,1])
 roc_auc = auc(fpr,tpr)
+
 
 # Plot
 plt.figure()
@@ -151,4 +234,12 @@ timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 file = os.path.join('./results/loss', f'binary_weights_loss_{timestamp}.png')
 plt.savefig(file)
 
+plt.figure(figsize=(20,12))
+disp = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=class_names)
+disp.plot()
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+file = os.path.join('./results/confusion', f'binary_weights_cm_{timestamp}.png')
+plt.savefig(file, dpi=300)
 plt.close()

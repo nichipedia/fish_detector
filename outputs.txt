@@ -266,3 +266,29 @@
                                                                                                                                                                                                                                                                                                                                                                                                       Avg TPR (Recall)         0.8538
                                                                                                                                                                                                                                                                                                                                                                                                       Avg FPR                  0.0233
 
+# Binary Output
+[[559   3]
+ [  8 430]]
+               precision    recall  f1-score   support
+
+                   negative    0.98589   0.99466   0.99026       562
+                       positive    0.99307   0.98174   0.98737       438
+
+                           accuracy                        0.98900      1000
+                              macro avg    0.98948   0.98820   0.98881      1000
+                              weighted avg    0.98904   0.98900   0.98899      1000
+
+                              Running Validation
+                              Metric                    Value
+                              ------------------------------
+                              FP                   [5. 3.]
+                              FN                   [3. 5.]
+                              TP                   [559. 433.]
+                              TN                   [433. 559.]
+                              Accuracy                 0.9920
+                              Macro F1                 0.9919
+                              Weighted F1              0.9920
+                              Avg TPR (Recall)         0.9916
+                              Avg FPR                  0.0084
+
+
