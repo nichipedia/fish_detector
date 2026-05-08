@@ -13,239 +13,255 @@ import numpy as np
 from datetime import datetime
 import os
 
-data_root = "/home/nmoran/Downloads"
+def main():
 
-num_classes = 17
+    num_classes = 17
 
-def build_model(num_classes, pretrained=True):
-    weights = ResNet50_Weights.DEFAULT if pretrained else None
-    model = resnet50(weights=weights)
-    model.fc = nn.Linear(model.fc.in_features, num_classes)
-    return model, weights
+    has_weights = False
+
+    def build_model(num_classes, pretrained=True):
+        weights = ResNet50_Weights.DEFAULT if pretrained else None
+        model = resnet50(weights=weights)
+        model.fc = nn.Linear(model.fc.in_features, num_classes)
+        return model, weights
 
 
-model, weights = build_model(num_classes, pretrained=True)
+    model, weights = build_model(num_classes, pretrained=has_weights)
 
-transform = weights.transforms() if weights is not None else None
+    device = None
+    data_root = None
+    workers = None
+    if torch.backends.mps.is_available():
+        data_root = "/Users/nmoran/Downloads/prepared"
+        workers = 10
+        device = torch.device("mps")
+    elif torch.cuda.is_available():
+        data_root = '/home/nmoran/Downloads'
+        workers = 16
+        device = torch.device("cuda")
+    else:
+        raise ValueError('Probably dont want to try this on cpu')
 
-train_dir = f"{data_root}/multi_train"
-test_dir = f"{data_root}/multi_train"
-val_dir   = f"{data_root}/multi_val"
+    print("Using device:", device)
+    model = model.to(device)
 
-train_dataset = datasets.ImageFolder(root=train_dir, transform=weights.transforms())
-test_dataset = datasets.ImageFolder(root=test_dir, transform=weights.transforms())
-val_dataset   = datasets.ImageFolder(root=val_dir,   transform=weights.transforms())
+    transform = weights.transforms() if weights is not None else ResNet50_Weights.DEFAULT.transforms()
 
-targets = torch.tensor(train_dataset.targets)
-class_counts = torch.bincount(targets)
-class_weights = 1.0 / class_counts.float()
-sample_weights = class_weights[targets]
+    train_dir = f"{data_root}/multi_train"
+    test_dir = f"{data_root}/multi_train"
+    val_dir   = f"{data_root}/multi_val"
 
-sampler = WeightedRandomSampler(
-    weights=sample_weights,
-    num_samples=len(sample_weights),
-    replacement=True
-)
+    train_dataset = datasets.ImageFolder(root=train_dir, transform=transform)
+    test_dataset = datasets.ImageFolder(root=test_dir, transform=transform)
+    val_dataset   = datasets.ImageFolder(root=val_dir,   transform=transform)
 
-class_names = train_dataset.classes
-batch_size = 32
+    targets = torch.tensor(train_dataset.targets)
+    class_counts = torch.bincount(targets)
+    class_weights = 1.0 / class_counts.float()
+    sample_weights = class_weights[targets]
 
-train_loader = DataLoader(
-    train_dataset,
-    batch_size=batch_size,
-    sampler=sampler,
-    num_workers=1,
-    pin_memory=True,
-)
+    sampler = WeightedRandomSampler(
+        weights=sample_weights,
+        num_samples=len(sample_weights),
+        replacement=True
+    )
 
-test_loader = DataLoader(
-    test_dataset,
-    batch_size=batch_size,
-    shuffle=True,
-    num_workers=1,
-    pin_memory=True,
-)
+    class_names = train_dataset.classes
+    batch_size = 256
 
-val_loader = DataLoader(
-    val_dataset,
-    batch_size=batch_size,
-    shuffle=True,
-    num_workers=1,
-    pin_memory=True,
-)
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        sampler=sampler,
+        num_workers=workers
+    )
 
-device = None
-if torch.backends.mps.is_available():
-    device = torch.device("mps")
-elif torch.cuda.is_available():
-    device = torch.device("cuda")
-else:
-    device = torch.device("cpu")
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=workers
+    )
 
-print("Using device:", device)
-model = model.to(device)
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=workers
+    )
 
-criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-train_loss = []
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-epochs = 20
+    train_loss = []
 
-all_probs = []
-all_labels = []
+    epochs = 20
 
-for epoch in range(epochs):
-    print(f'Epoch {epoch} training')
-    model.train()
-    epoch_loss = 0
-    for images, labels in train_loader:
-        images = images.to(device)
-        labels = labels.to(device)
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        epoch_loss += loss.item()
-        optimizer.step()
+    all_probs = []
+    all_labels = []
 
-    model.eval()
-    epoch_preds = []
-    epoch_labels = []
-    epoch_probs = []
-    epoch_loss /= len(train_loader)
-    train_loss.append(epoch_loss)
+    for epoch in range(epochs):
+        print(f'Epoch {epoch} training')
+        model.train()
+        epoch_loss = 0
+        for images, labels in train_loader:
+            images = images.to(device)
+            labels = labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            epoch_loss += loss.item()
+            optimizer.step()
+
+        model.eval()
+        epoch_preds = []
+        epoch_labels = []
+        epoch_probs = []
+        epoch_loss /= len(train_loader)
+        train_loss.append(epoch_loss)
+        correct = 0
+        total = 0
+        print(f'Epoch {epoch} evaluating')
+        with torch.no_grad():
+            for images, labels in test_loader:
+                images = images.to(device)
+                labels = labels.to(device)
+
+                outputs = model(images)
+                probs = F.softmax(outputs, dim=1)
+                preds = outputs.argmax(dim=1)
+                correct += (preds == labels).sum().item()
+                total += labels.size(0)
+                epoch_preds.append(preds.cpu())
+                epoch_labels.append(labels.cpu())
+                epoch_probs.append(probs.cpu())
+                all_labels.append(labels.cpu())
+                all_probs.append(probs.cpu())
+        epoch_preds = torch.cat(epoch_preds).numpy()
+        epoch_labels = torch.cat(epoch_labels).numpy()
+        epoch_probs = torch.cat(epoch_probs).numpy()
+
+        print(confusion_matrix(epoch_labels, epoch_preds))
+        print(classification_report(epoch_labels, epoch_preds, digits=5, target_names=class_names, zero_division=0))
+
+
+
+    val_preds = []
+    val_labels = []
     correct = 0
     total = 0
-    print(f'Epoch {epoch} evaluating')
+    print(f'Running Validation')
     with torch.no_grad():
-        for images, labels in test_loader:
+        for images, labels in val_loader:
             images = images.to(device)
             labels = labels.to(device)
 
             outputs = model(images)
-            probs = F.softmax(outputs, dim=1)
             preds = outputs.argmax(dim=1)
             correct += (preds == labels).sum().item()
             total += labels.size(0)
-            epoch_preds.append(preds.cpu())
-            epoch_labels.append(labels.cpu())
-            epoch_probs.append(probs.cpu())
-            all_labels.append(labels.cpu())
-            all_probs.append(probs.cpu())
-    epoch_preds = torch.cat(epoch_preds).numpy()
-    epoch_labels = torch.cat(epoch_labels).numpy()
-    epoch_probs = torch.cat(epoch_probs).numpy()
+            val_preds.append(preds.cpu())
+            val_labels.append(labels.cpu())
+    val_preds = torch.cat(val_preds).numpy()
+    val_labels = torch.cat(val_labels).numpy()
 
-    print(confusion_matrix(epoch_labels, epoch_preds))
-    print(classification_report(epoch_labels, epoch_preds, digits=5, target_names=class_names, zero_division=0))
-
-
-
-val_preds = []
-val_labels = []
-correct = 0
-total = 0
-print(f'Running Validation')
-with torch.no_grad():
-    for images, labels in val_loader:
-        images = images.to(device)
-        labels = labels.to(device)
-
-        outputs = model(images)
-        preds = outputs.argmax(dim=1)
-        correct += (preds == labels).sum().item()
-        total += labels.size(0)
-        val_preds.append(preds.cpu())
-        val_labels.append(labels.cpu())
-val_preds = torch.cat(val_preds).numpy()
-val_labels = torch.cat(val_labels).numpy()
-
-cm = confusion_matrix(val_labels, val_preds)
-report = classification_report(val_labels, val_preds, digits=5, target_names=class_names, zero_division=0, output_dict=True)
+    cm = confusion_matrix(val_labels, val_preds)
+    report = classification_report(val_labels, val_preds, digits=5, target_names=class_names, zero_division=0, output_dict=True)
 
 # Calculate TP, FP, FN, TN per class
-FP = cm.sum(axis=0) - np.diag(cm)
-FN = cm.sum(axis=1) - np.diag(cm)
-TP = np.diag(cm)
-TN = cm.sum() - (FP + FN + TP)
+    FP = cm.sum(axis=0) - np.diag(cm)
+    FN = cm.sum(axis=1) - np.diag(cm)
+    TP = np.diag(cm)
+    TN = cm.sum() - (FP + FN + TP)
 
 # Convert to float for metric calculations
-FP = FP.astype(float)
-FN = FN.astype(float)
-TP = TP.astype(float)
-TN = TN.astype(float)
+    FP = FP.astype(float)
+    FN = FN.astype(float)
+    TP = TP.astype(float)
+    TN = TN.astype(float)
 
 # Calculate rates per class
-TPR = TP / (TP + FN)  # Sensitivity/Recall
-TNR = TN / (TN + FP)  # Specificity
-PPV = TP / (TP + FP)  # Precision
-FPR = FP / (FP + TN)  # False Positive Rate
+    TPR = TP / (TP + FN)  # Sensitivity/Recall
+    TNR = TN / (TN + FP)  # Specificity
+    PPV = TP / (TP + FP)  # Precision
+    FPR = FP / (FP + TN)  # False Positive Rate
 
-summary = {
-    'accuracy': report['accuracy'],
-    'macro_f1': report['macro avg']['f1-score'],
-    'weighted_f1': report['weighted avg']['f1-score'],
-    'avg_TPR': TPR.mean(),
-    'avg_FPR': FPR.mean()
-}
+    summary = {
+        'accuracy': report['accuracy'],
+        'macro_f1': report['macro avg']['f1-score'],
+        'weighted_f1': report['weighted avg']['f1-score'],
+        'avg_TPR': TPR.mean(),
+        'avg_FPR': FPR.mean()
+    }
 
-print(f"{'Metric':<20} {'Value':>10}")
-print("-" * 30)
+    print(f"{'Metric':<20} {'Value':>10}")
+    print("-" * 30)
 
-print(f"{'FP':<20} {summary['macro_f1']:>10.4f}")
-print(f"{'FN':<20} {summary['macro_f1']:>10.4f}")
-print(f"{'TP':<20} {summary['macro_f1']:>10.4f}")
-print(f"{'TN':<20} {summary['macro_f1']:>10.4f}")
-print(f"{'Accuracy':<20} {summary['accuracy']:>10.4f}")
-print(f"{'Macro F1':<20} {summary['macro_f1']:>10.4f}")
-print(f"{'Weighted F1':<20} {summary['weighted_f1']:>10.4f}")
-print(f"{'Avg TPR (Recall)':<20} {summary['avg_TPR']:>10.4f}")
-print(f"{'Avg FPR':<20} {summary['avg_FPR']:>10.4f}")
+    print(f"{'FP':<20} {FP}")
+    print(f"{'FN':<20} {FN}")
+    print(f"{'TP':<20} {TP}")
+    print(f"{'TN':<20} {TN}")
+    print(f"{'Accuracy':<20} {summary['accuracy']:>10.4f}")
+    print(f"{'Macro F1':<20} {summary['macro_f1']:>10.4f}")
+    print(f"{'Weighted F1':<20} {summary['weighted_f1']:>10.4f}")
+    print(f"{'Avg TPR (Recall)':<20} {summary['avg_TPR']:>10.4f}")
+    print(f"{'Avg FPR':<20} {summary['avg_FPR']:>10.4f}")
 
 # Binarize labels
-all_probs = torch.cat(all_probs).numpy()
-all_labels = torch.cat(all_labels).numpy()
-y_bin = label_binarize(all_labels, classes=list(range(num_classes)))
+    all_probs = torch.cat(all_probs).numpy()
+    all_labels = torch.cat(all_labels).numpy()
+    y_bin = label_binarize(all_labels, classes=list(range(num_classes)))
 
-fpr = {}
-tpr = {}
-roc_auc = {}
+    fpr = {}
+    tpr = {}
+    roc_auc = {}
 
-for i in range(num_classes):
-    fpr[i], tpr[i], _ = roc_curve(y_bin[:, i], all_probs[:, i])
-    roc_auc[i] = auc(fpr[i], tpr[i])
+    for i in range(num_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_bin[:, i], all_probs[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
 
-model_name = 'res50'
+    weight_string = None
+    if has_weights:
+        weight_string = 'weights'
+    else:
+        weight_string = 'noweights'
+
 # Plot
-plt.figure(figsize=(12,8))
-for i in range(num_classes):
-    plt.plot(fpr[i], tpr[i], label=f"Class {class_names[i]} (AUC = {roc_auc[i]:.2f})")
+    plt.figure(figsize=(12,8))
+    for i in range(num_classes):
+        plt.plot(fpr[i], tpr[i], label=f"Class {class_names[i]} (AUC = {roc_auc[i]:.2f})")
 
-plt.plot([0, 1], [0, 1], "k--")
-plt.xlabel("False Positive Rate")
-plt.ylabel("True Positive Rate")
-plt.title(f"ROC Curve {model_name}")
-plt.legend()
-timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-file = os.path.join('./results/roc', f'{model_name}fish_weights_roc_{timestamp}.png')
-plt.savefig(file, dpi=300)
+    plt.plot([0, 1], [0, 1], "k--")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title(f"ROC Curve Res18")
+    plt.legend()
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    file = os.path.join('./results/roc', f'res18fish_{weight_string}_roc_{timestamp}.png')
+    plt.savefig(file, dpi=300)
 
-plt.figure(figsize=(12,8))
-plt.plot(train_loss)
-plt.title("Training Loss")
-plt.xlabel("Epochs")
-plt.ylabel("Loss")
-timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-file = os.path.join('./results/loss', f'{model_name}fish_weights_loss_{timestamp}.png')
-plt.savefig(file, dpi=300)
+    plt.figure(figsize=(12,8))
+    plt.plot(train_loss)
+    plt.title("Training Loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    file = os.path.join('./results/loss', f'res18fish_{weight_string}_loss_{timestamp}.png')
+    plt.savefig(file, dpi=300)
 
-plt.figure(figsize=(20,12))
-disp = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=class_names)
-disp.plot()
-timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-file = os.path.join('./results/confusion', f'{model_name}fish_weights_cm_{timestamp}.png')
-plt.savefig(file, dpi=300)
+    plt.figure(figsize=(20,12))
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=class_names)
+    disp.plot()
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    file = os.path.join('./results/confusion', f'res18fish_{weight_string}_cm_{timestamp}.png')
+    plt.savefig(file, dpi=300)
 
 
-plt.close()
+    plt.close()
+
+if __name__ == '__main__':
+    main()
