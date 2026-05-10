@@ -2,7 +2,8 @@
 The first part of this project was to develop a model that classifies if a fish is present in a image. 
 Using the default configurations in PyTorch this was acheived in short time.
 The second part was to develop a model that could identify the kind of fish or if there was no fish. 
-This proved to be much more challenging. In this section, the results of these models are discussed.
+This proved to be much more challenging. 
+Tables \ref{tab:binarymetrics} and \ref{tab:multimetrics} have the results for each model.
 
 
 \begin{table}[h]
@@ -23,25 +24,23 @@ This proved to be much more challenging. In this section, the results of these m
     \centering
     \begin{tabular}{lcccc}
         \hline
-        & Accuracy & F1 Score & Precision & Recall \\
+        & Accuracy & Precision & Recall & F1 Score \\
         \hline
-        Res18 & 0.6928 & 0.7001 & 0.76663 & 0.87668 \\
+        Res18 & 0.6928  & 0.76663 & 0.87668 & 0.7001 \\
         Res18 (Transfer Learning) & 0.989 & 0.988 & 0.988 & 0.989 \\
         Res50 & 0.989 & 0.988 & 0.988 & 0.989 \\
-        Res50 (Transfer Learning) & 0.989 & 0.988 & 0.988 & 0.989 \\
-        DenseNet & 0.989 & 0.988 & 0.988 & 0.989 \\
-        DenseNet (Transfer Learning) & 0.989 & 0.988 & 0.988 & 0.989 \\
-        RegNet & 0.989 & 0.988 & 0.988 & 0.989 \\
-        RegNet (Transfer Learning) & 0.989 & 0.988 & 0.988 & 0.989 \\
+        Res50 (Transfer Learning) & 0.6709 & 0.81345 & 0.89297 & 0.79488 \\
+        DenseNet & 0.5730 & 0.65927 & 0.85114 & 0.70515 \\
+        DenseNet (Transfer Learning) & 0.6734 & 0.78702 & 0.89002 & 0.79095 \\
+        RegNet & 0.5700 & 0.66209 & 0.84786 & 0.71333 \\
+        RegNet (Transfer Learning) & 0.6786 & 0.82266 & 0.89411 & 0.80735 \\
         \hline
     \end{tabular}
     \caption{Multi Fish Model performance metrics.}
     \label{tab:multimetrics}
 \end{table}
 
-
-\subsection{Binary Res18 Model}
-The first model ran was the binary classification case. A Res18 model was trained using transfer learning and the default PyTorch transforms. 
+Each model trained in this project were trained using the default transforms from PyTorch. I found these to work very well out the box. Espicially for the binary problem.
 The default transforms are a Tesnor Conversion, a image resize to 256x256, a center crop, a float32 conversion, and a channel normalization.
 Below is a representation of the transforms used in python
 
@@ -56,7 +55,10 @@ transform = T.Compose([
 ])
 \end{lstlisting}
 
-The Res18 model performed very well with the default configurations. Table \ref{tab:binarymetrics} has the results for the performance of the model.
+\subsection{Binary ResNet18 Model}
+The first model ran was the binary classification case. A Res18 model was trained using transfer learning and the default PyTorch transforms. 
+
+The ResNet 18 model performed very well with the default configurations. Table \ref{tab:binarymetrics} has the results for the performance of the model.
 The confusion matrix, ROC graph, and loss graph can be seen at \ref{fig:binaryconf} \ref{fig:binaryroc} \ref{fig:binaryloss} respectively.
 Achieving a 98\% accuracy was a very strong performance. This lead me to immediatetly attempting the multi fish problem.
 
@@ -83,9 +85,197 @@ Achieving a 98\% accuracy was a very strong performance. This lead me to immedia
 \end{figure}
 
 \subsection{Res18 Multi Fish Model}
-The Res18 model was used as the first model to attempt the multi fish classification problem. It was trained with and without transfer learning.
-Utlizing transfer learning dramatically imrproved the prediction accuracy.
+The ResNet18 model was used as the first model to attempt the multi fish classification problem. It was trained with and without transfer learning.
+Utlizing transfer learning dramatically imrproved the prediction accuracy. It was also trained with the transformed mentioned at the beginning of this section.
+Table \ref{tab:multimetrics} has the results for the two training attempts with this model.
 
 
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/confusion/res18fish_noweights_cm_2026-05-08_09-18.png}
+    \caption{Confusion Matrix for the Res18 model trained to predict the fish species.}
+\label{fig:res18noweightsconf}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/roc/res18fish_noweights_roc_2026-05-08_09-18.png}
+    \caption{ROC for the Res18 model trained to predict the fish species.}
+\label{fig:res18noweightsroc}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/loss/res18fish_noweights_loss_2026-05-08_09-18.png}
+    \caption{Loss Graph for the Res18 model trained to predict the fish species.}
+\label{fig:res18noweightsloss}
+\end{figure}
 
 
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/confusion/res18fish_weights_cm_2026-05-08_13-10.png}
+    \caption{Confusion Matrix for the Res18 model trained to predict fish species.}
+\label{fig:res18weightsconf}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/roc/res18fish_weights_roc_2026-05-08_13-10.png}
+    \caption{ROC for the Res18 model trained to predict fish species.}
+\label{fig:res18weightsroc}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/loss/res18fish_weights_loss_2026-05-08_13-10.png}
+    \caption{Loss Graph for the Res18 model trained to predict fish species.}
+\label{fig:res18weightsloss}
+\end{figure}
+
+\subsection{ResNet 50 Multi Fish Model}
+
+The ResNet50 model was used as the first model to attempt the multi fish classification problem. It was trained with and without transfer learning.
+Utlizing transfer learning dramatically imrproved the prediction accuracy. It was also trained with the transformed mentioned at the beginning of this section.
+Table \ref{tab:multimetrics} has the results for the two training attempts with this model.
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/confusion/res50fish_noweights_cm_2026-05-08_08-54.png}
+    \caption{Confusion Matrix for the res50 model trained to predict the fish species.}
+\label{fig:res50noweightsconf}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/roc/res50fish_noweights_roc_2026-05-08_08-54.png}
+    \caption{ROC for the res50 model trained to predict the fish species.}
+\label{fig:res50noweightsroc}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/loss/res50fish_noweights_loss_2026-05-08_08-54.png}
+    \caption{Loss Graph for the res50 model trained to predict the fish species.}
+\label{fig:res50noweightsloss}
+\end{figure}
+
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/confusion/res50fish_weights_cm_2026-05-08_09-31.png}
+    \caption{Confusion Matrix for the res50 model trained to predict fish species.}
+\label{fig:res50weightsconf}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/roc/res50fish_weights_roc_2026-05-08_09-31.png}
+    \caption{ROC for the res50 model trained to predict fish species.}
+\label{fig:res50weightsroc}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/loss/res50fish_weights_loss_2026-05-08_09-31.png}
+    \caption{Loss Graph for the res50 model trained to predict fish species.}
+\label{fig:res50weightsloss}
+\end{figure}
+
+\subsection{DenseNet Multi Fish Model}
+
+The DenseNet model was used as the first model to attempt the multi fish classification problem. It was trained with and without transfer learning.
+Utlizing transfer learning dramatically imrproved the prediction accuracy. It was also trained with the transformed mentioned at the beginning of this section.
+Table \ref{tab:multimetrics} has the results for the two training attempts with this model.
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/confusion/DenseNetfish_noweights_cm_2026-05-08_11-24.png}
+    \caption{Confusion Matrix for the DenseNet model trained to predict the fish species.}
+\label{fig:DenseNetnoweightsconf}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/roc/DenseNetfish_noweights_roc_2026-05-08_11-24.png}
+    \caption{ROC for the DenseNet model trained to predict the fish species.}
+\label{fig:DenseNetnoweightsroc}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/loss/DenseNetfish_noweights_loss_2026-05-08_11-24.png}
+    \caption{Loss Graph for the DenseNet model trained to predict the fish species.}
+\label{fig:DenseNetnoweightsloss}
+\end{figure}
+
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/confusion/DenseNetfish_weights_cm_2026-05-08_10-32.png}
+    \caption{Confusion Matrix for the DenseNet model trained to predict fish species.}
+\label{fig:DenseNetweightsconf}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/roc/DenseNetfish_weights_roc_2026-05-08_10-32.png}
+    \caption{ROC for the DenseNet model trained to predict fish species.}
+\label{fig:DenseNetweightsroc}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/loss/DenseNetfish_weights_loss_2026-05-08_10-32.png}
+    \caption{Loss Graph for the DenseNet model trained to predict fish species.}
+\label{fig:DenseNetweightsloss}
+\end{figure}
+
+\subsection{RegNet Multi Fish Model}
+
+The RegNet model was used as the first model to attempt the multi fish classification problem. It was trained with and without transfer learning.
+Utlizing transfer learning dramatically imrproved the prediction accuracy. It was also trained with the transformed mentioned at the beginning of this section.
+Table \ref{tab:multimetrics} has the results for the two training attempts with this model.
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/confusion/RegNetfish_noweights_cm_2026-05-08_12-04.png}
+    \caption{Confusion Matrix for the RegNet model trained to predict the fish species.}
+\label{fig:RegNetnoweightsconf}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/roc/RegNetfish_noweights_roc_2026-05-08_12-04.png}
+    \caption{ROC for the RegNet model trained to predict the fish species.}
+\label{fig:RegNetnoweightsroc}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/loss/RegNetfish_noweights_loss_2026-05-08_12-04.png}
+    \caption{Loss Graph for the RegNet model trained to predict the fish species.}
+\label{fig:RegNetnoweightsloss}
+\end{figure}
+
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/confusion/RegNetfish_weights_cm_2026-05-08_12-28.png}
+    \caption{Confusion Matrix for the RegNet model trained to predict fish species.}
+\label{fig:RegNetweightsconf}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/roc/RegNetfish_weights_roc_2026-05-08_12-28.png}
+    \caption{ROC for the RegNet model trained to predict fish species.}
+\label{fig:RegNetweightsroc}
+\end{figure}
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{../results/loss/RegNetfish_weights_loss_2026-05-08_12-28.png}
+    \caption{Loss Graph for the RegNet model trained to predict fish species.}
+\label{fig:RegNetweightsloss}
+\end{figure}

@@ -1,49 +1,19 @@
-\section{Discussion and Results}
+\section{Discussion}
+The binary classification problem was easily solved.
+Using a ResNet18 with transfer learning and default transforms quickly reached high performance.
+I found that classifying if a fish was present or not to be a much easier problem than identifying the kind of fish in the image.
+The dataset itself was well structured for the fish or no fish problem. Meaning that it was well balanced.
 
-Plotting loss against training epochs has a logarithmic shape to it. Converging around 0.20 loss.
-It quickly converged: within 20 epoch. See figure \ref{fig:loss_plot}.
+Identifying the fish species introduced complexity. One problem it introduced was the balance of the data. 
+The 17 classes introduced do not have the same balance that the previous fish or no fish classes maintained.
+Table \ref{tab:fish_classes} shows that Fish1 has several times the samples as half of the dataset.  
+Also, the no fish class still exists as a image could not contain a picture of a fish. 
+It maintains its large number of samples and suddenly there is a big balance problem!
+Looking at the confusion matrices, it became apparent that the no fish class was a safe place for the model to predict if it was unsure of the fish.
+To solve this, I enforced over sampling across the dataset. 
 
-
-\begin{figure}[htpb]
-\centering
-\includegraphics[width=0.8\linewidth]{./figures/loss_plot.png}
-    \caption{Plot of Loss vs Training Epoch}
-\label{fig:loss_plot}
-\end{figure}
-
-The model was evaluated with the provided test samples. 
-See figure \ref{fig:eval} for code.
-Both samples were predicted as the 0 class.
-See figure \ref{fig:pred_log}
-This gave a accuracy of 0.5 for testing. 
-There are several reasons for this low accuracy.
-Imbalanced training data, network architecture, learning rate, or other factors.
+Transfer Learning helped increase performance significantly. In every model it improved the accuracy by 20\%.  
+Ajusting the batch size also effected the sample size. For the models, I found having a large batch of more than 128 negatively effected accuracy. I settled with the smaller batch size for most of the models for both performance and hardware restrictions. I was unable to train larger models with large batch sizes without running out of GPU RAM.
 
 
-\begin{figure}[htpb]
-\centering
-\includegraphics[width=0.8\linewidth]{./figures/evaluation.png}
-    \caption{Snippet of Test Sample prediction code.}
-\label{fig:pred_log}
-\end{figure}
-
-\begin{figure}[htpb]
-\centering
-\includegraphics[width=0.8\linewidth]{./figures/prediction.png}
-    \caption{Log of test sample prediction.}
-\label{fig:eval}
-\end{figure}
-
-Several approaches were attempted to improve prediction.
-Training epochs were increased, but the model converged quickly to a loss of 0.2 regardless of how many epochs were used.
-Different network architectures were attempted. Adding nodes and changing the activation function did not yield better results.
-Changing the learning rate created fluctuation in the loss graph, but it also did not help with prediction. 
-Adam was attempted instead of SGD but this did increase prediction results. 
-Additional samples were also added, but this did not give a better prediction result.
-//
-
-The point of this assignment was to model the logical AND. 
-The implementation described in this report performed poorly on the provided test samples.
-It is possible that a more simple model will be better for this limited problem.
-The results found is that a Neural Network architecture following the parameters described in this assignment did not perform well for modeling the logical AND.
-The code for this project can be found on Google Collab Lab at \href{https://colab.research.google.com/drive/1SlWjzLfr9ndw7NioDr7yHefMp0X0A_Np?usp=sharing}{Nicholas' Google Collab Link}.
+The code for this project can be found on Google Collab Lab at 
