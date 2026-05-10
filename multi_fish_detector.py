@@ -17,7 +17,7 @@ def main():
 
     num_classes = 17
 
-    has_weights = False
+    has_weights = True
 
     def build_model(num_classes, pretrained=True):
         weights = ResNet18_Weights.DEFAULT if pretrained else None
