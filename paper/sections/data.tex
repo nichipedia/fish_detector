@@ -58,7 +58,7 @@ Table \ref{tab:fish_no_fish} represents the percentage of fish samples and no fi
 \end{table}
 
 
-Edits were made to the dataset to make development easier. Two new datasets were created. A dataset where fish and no-fish directories were copied to a new positive and negative dataset. Another was created where each individual class was copied to a folder containing its samples. This was done because the image loader used from PyTorch will automatically assign labels based on the folder names. Table \ref{tab:fish_classes} describes the classes that were created. A no fish class was also
+Edits were made to the dataset to make development easier. Two new datasets were created. A dataset where fish and no-fish directories were copied to a new positive and negative dataset. Another was created where each individual class was copied to a folder containing its samples. This was done to utilize the image loader from PyTorch which will automatically assign labels based on the folder names. Table \ref{tab:fish_classes} describes the classes that were created. A no fish class was also
 for the multiclassification problem.
 A link for downloading the prepared dataset used in this project can be downloaded from the appendix section.
 
@@ -68,10 +68,20 @@ The linux command line was used to do data analysyis. Below is the command used 
 ll | sed -E 's/^[^_]+_[^_]+_[^_]+_([^_].*)_f[0-9]+\.jpg$/\1/' | sort | uniq
 \end{lstlisting}
 
+The above command was piped to a file and used as input to a bash script to copy images to class folders
+
+\begin{lstlisting}[language=python]
+for class in $(< /home/nmoran/Documents/python/fish_detector/classes.txt); do
+    mkdir -p "/home/nmoran/Downloads/multi_test/$class"
+    find . -type f -name "*$class*" -exec cp -n {} "/home/nmoran/Downloads/multi_test/$class/" \;
+done
+\end{lstlisting}
+
 This was extended to determine class count for example:
 
 
 \begin{lstlisting}[language=bash]
 ll | sed -E 's/^[^_]+_[^_]+_[^_]+_([^_].*)_f[0-9]+\.jpg$/\1/' | grep -i F6 | wc -l
 \end{lstlisting}
+
 
