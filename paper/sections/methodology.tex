@@ -7,7 +7,7 @@ ResNet-18, as implemented in PyTorch’s torchvision, is a relatively shallow re
 The core of ResNet-18 is composed of four stages of residual blocks, called BasicBlocks, stacked in sequence. Each stage maintains a fixed number of output channels but may downsample the spatial dimensions at the beginning of the stage. The first stage (layer1) uses 64 channels and contains two BasicBlocks, both with stride 1, so it preserves the 56×5656×56 resolution. The second, third, and fourth stages (layer2, layer3, layer4) have 128, 256, and 512 channels respectively, each again using two BasicBlocks. In each of those stages, the first block uses stride 2 in its first convolution (and a matching 1×1 convolution in the shortcut) to halve the spatial resolution, while the second block keeps stride 1 and uses an identity shortcut. This pattern gradually reduces the feature map from 56×5656×56 to 28×2828×28, then 14×1414×14, and finally 7×77×7, while increasing channel depth to capture more abstract features.
 \\
 
-\begin{figure}[htpb]
+\begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{./graphics/res18architecture.png}
     \caption{Architecture Description of Res18 taken from \cite{herbarium2021_half_earth_2022}}
@@ -21,7 +21,7 @@ At the end of the four residual stages, ResNet-18 has a feature map of size 512�
 \subsection{Res50 Architecture}
 ResNet-50, as commonly implemented in PyTorch’s torchvision, is a 50-layer deep convolutional neural network that builds on the residual learning idea with a more complex block called the bottleneck. The network starts with a familiar stem: an input image of size 3×224×2243×224×224 passes through a 7×7 convolution with 64 filters and stride 2, followed by batch normalization, a ReLU activation, and a 3×3 max-pooling layer with stride 2. After this stem, the feature map has 64 channels and a spatial resolution of 56×5656×56, providing a compact but expressive representation of low-level features like edges and textures. This initial stage mirrors ResNet-18/34 and prepares the data for deeper residual processing.
 \\
-\begin{figure}[htpb]
+\begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{./graphics/res50architecture.png}
     \caption{Architecture Description of Res50 taken from \cite{mukherjee_annotated_resnet50_2022}.}
@@ -36,7 +36,7 @@ Each bottleneck block preserves the key residual idea: its output is the sum of 
 DenseNet is a convolutional neural network that connects every layer to every other layer within the same block, instead of only connecting each layer to the next one. Concretely, inside a dense block, each layer receives as input the concatenation of the feature maps produced by all previous layers, and its own output is then passed on to all subsequent layers in that block. This dense connectivity results in L(L+1)/2L(L+1)/2 direct connections for a block with LL layers, which greatly strengthens information and gradient flow through the network.
 \\
 
-\begin{figure}[htpb]
+\begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{./graphics/denseNetArchitecture.jpg}
     \caption{Architecture Description of DenseNet taken from \cite{favqc_densenet169_passline}.}
@@ -52,7 +52,7 @@ RegNet 400MF is a small member of the RegNet family implemented in torchvision, 
 wawa (slope), wmwm (multiplicative factor), and a quantization constant, then groups consecutive blocks with identical quantized width into four stages and uses those stage widths and depths to build the network.
 \\
 
-\begin{figure}[htpb]
+\begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{./graphics/regNetArchitecture.jpg}
     \caption{Architecture Description of RegNet taken from \cite{mahub_2021}.}
@@ -70,7 +70,7 @@ The python code was written using Vim and the project was ran from a commandline
 Matplotlib was used to produce the performance plots from each model.
 
 
-\begin{figure}[htpb]
+\begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{./graphics/vimenv.png}
     \caption{Screenshot of Vim Environment used for coding.}
@@ -83,3 +83,68 @@ Four models were trained and similar performancei was found between them.
 
 Transfer learning was utilized to improve training performance. 
 It is a machine learning technique where a model that has already been trained on one task is reused as the starting point for a different but related task. Instead of learning from scratch, the model keeps its previously learned internal representations and is then fine‑tuned on the new dataset, which is often smaller. This approach reduces training time, lowers data requirements, and often improves performance, because the model builds on broadly useful features it has already discovered.
+
+\subsection{Optimization}
+This project used cross entropy for its loss function.
+For a multi-class classification problem with $C$ classes, the cross-entropy
+loss for a single example with one-hot label vector $\mathbf{y} \in \{0,1\}^C$
+and predicted class probabilities $\hat{\mathbf{y}} \in [0,1]^C$ is
+\[
+\mathcal{L}_{\text{CE}}(\mathbf{y}, \hat{\mathbf{y}}) =
+- \sum_{c=1}^{C} y_c \log \hat{y}_c.
+\]
+For a dataset of $N$ examples, we use the average cross-entropy loss
+\[
+\mathcal{L}_{\text{CE}} = \frac{1}{N} \sum_{i=1}^{N}
+\left(
+- \sum_{c=1}^{C} y_{i,c} \log \hat{y}_{i,c}
+\right).
+\]
+
+The Adam optimizer was used to update the model parameters $\theta$ based on the
+stochastic gradient of the loss function. Let $g_t = \nabla_{\theta} \mathcal{L}_t$
+denote the gradient at step $t$. Adam maintains estimates of the first and
+second moments of the gradients:
+\[
+m_t = \beta_1 m_{t-1} + (1 - \beta_1) g_t,
+\]
+\[
+v_t = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2,
+\]
+where $\beta_1, \beta_2 \in [0,1)$ are the exponential decay rates, and the
+squaring is element-wise. Bias-corrected estimates are computed as
+\[
+\hat{m}_t = \frac{m_t}{1 - \beta_1^t}, \qquad
+\hat{v}_t = \frac{v_t}{1 - \beta_2^t}.
+\]
+The parameter update rule for learning rate $\alpha$ and numerical stability
+term $\varepsilon$ is
+\[
+\theta_t = \theta_{t-1} - \alpha \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \varepsilon}.
+\]
+
+\subsection{Classification Metrics}
+Given the confusion matrix terms \emph{true positives} (TP), \emph{false
+positives} (FP), \emph{true negatives} (TN), and \emph{false negatives} (FN),
+precision, recall, F1 score, and accuracy are defined as follows.
+
+\paragraph{Precision and Recall} For a given class,
+\[
+\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}},
+\qquad
+\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}.
+\]
+
+\paragraph{F1 Score} The F1 score is the harmonic mean of precision and recall:
+\[
+\text{F1} = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}
+{\text{Precision} + \text{Recall}}.
+\]
+
+\paragraph{Accuracy} Overall classification accuracy is defined as
+\[
+\text{Accuracy} = \frac{\text{TP} + \text{TN}}
+{\text{TP} + \text{TN} + \text{FP} + \text{FN}}.
+\]
+
+In the results section, macro-averaged metrics are reported. For example precision, recall, and F1 score, are computed by first evaluating each class independently and then averaging the resulting scores across classes, giving equal weight to each class regardless of its frequency.
