@@ -67,7 +67,7 @@ def main():
     )
 
     class_names = train_dataset.classes
-    batch_size = 256
+    batch_size = 128
 
     train_loader = DataLoader(
         train_dataset,
@@ -251,14 +251,13 @@ def main():
     file = os.path.join('./results/loss', f'res18fish_{weight_string}_loss_{timestamp}.png')
     plt.savefig(file, dpi=300)
 
-    plt.figure(figsize=(20,12))
+    plt.figure(figsize=(30,24))
     disp = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=class_names)
     disp.plot()
     plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     file = os.path.join('./results/confusion', f'res18fish_{weight_string}_cm_{timestamp}.png')
-    plt.savefig(file, dpi=300)
+    plt.savefig(file, bbox_inches='tight')
 
 
     plt.close()
