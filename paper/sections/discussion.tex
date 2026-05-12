@@ -9,8 +9,10 @@ The 17 classes introduced do not have the same balance that the previous fish or
 Table \ref{tab:fish_classes} shows that Fish1 has several times the samples as half of the dataset.  
 Also, the no fish class still exists as a image could not contain a picture of a fish. 
 It maintains its large number of samples and suddenly there is a big balance problem!
-Looking at the confusion matrices, it became apparent that the no fish class was a safe place for the model to predict if it was unsure of the fish.
-To solve this, I enforced over sampling across the dataset. 
+I tried to solve this by adjusting the sampling but simply ran out of time to adjust and record in a meaningful way.
+The confusion matrices in the Results section such as \ref{fig:res18weightsconf} show that the no fish class is collecting predictions, this makes it apparent that the no fish class was a safe place for the model to predict if it was unsure of the fish.
+A example of why this might be happening can be seen in figure \ref{graphic:fishexample} the image at first glance seems to not have a fish, but it is in the upper right hand corner.
+Its possible that this image looks like one where a fish isn't present to the model.
 
 Transfer Learning helped increase performance significantly. In every model it improved the accuracy by 20\%.  
 Ajusting the batch size also effected the sample size. For the models, I found having a large batch of more than 128 negatively effected accuracy. I settled with the smaller batch size for most of the models for both performance and hardware restrictions. I was unable to train larger models with large batch sizes without running out of GPU RAM.

@@ -26,9 +26,9 @@ Tables \ref{tab:binarymetrics} and \ref{tab:multimetrics} have the results for e
         \hline
         & Accuracy & Precision & Recall & F1 Score \\
         \hline
-        Res18 & 0.6928  & 0.76663 & 0.87668 & 0.7001 \\
-        Res18 (Transfer Learning) & 0.989 & 0.988 & 0.988 & 0.989 \\
-        Res50 & 0.989 & 0.988 & 0.988 & 0.989 \\
+        Res18  & 0.5236 & 0.6287 & 0.8163 & 0.7023 \\
+        Res18 (Transfer Learning) & 0.6928  & 0.76663 & 0.87668 & 0.7001 \\
+        Res50 & 0.5720 & 0.6493 & 0.8465 & 0.70510 \\
         Res50 (Transfer Learning) & 0.6709 & 0.81345 & 0.89297 & 0.79488 \\
         DenseNet & 0.5730 & 0.65927 & 0.85114 & 0.70515 \\
         DenseNet (Transfer Learning) & 0.6734 & 0.78702 & 0.89002 & 0.79095 \\
@@ -60,6 +60,7 @@ I found these parameters to work espicially well for the binary classification p
 The multi fish classification models also used CrossEntropy for its loss function. The Adam Optimizer was used with a learning rate of 0.004.
 Each model required a different batch size because of memory constraints.
 Table \ref{tab:batchsize} shows the batch sizes used.
+The binary model converged in 12 epochs. The multi fish classification models converged in 20 epochs.
 
 \begin{table}[!ht]
     \centering
@@ -112,22 +113,22 @@ Table \ref{tab:multimetrics} has the results for the two training attempts with 
 
 \begin{figure}[!htpb]
 \centering
-\includegraphics[width=0.8\linewidth]{../results/confusion/res18fish_noweights_cm_2026-05-08_09-18.png}
-    \caption{Confusion Matrix for the Res18 model trained to predict the fish species.}
+\includegraphics[width=0.8\linewidth]{../results/confusion/res18fish_noweights_cm_2026-05-12_08-59.png}
+    \caption{Confusion Matrix for the ResNet18 model initialized with blank weights trained to predict the fish species.}
 \label{fig:res18noweightsconf}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/roc/res18fish_noweights_roc_2026-05-08_09-18.png}
-    \caption{ROC for the Res18 model trained to predict the fish species.}
+    \caption{ROC for the ResNet18 model initialized with blank weights trained to predict the fish species.}
 \label{fig:res18noweightsroc}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/loss/res18fish_noweights_loss_2026-05-08_09-18.png}
-    \caption{Loss Graph for the Res18 model trained to predict the fish species.}
+    \caption{Loss Graph for the ResNet18 model initialized with blank weights trained to predict the fish species.}
 \label{fig:res18noweightsloss}
 \end{figure}
 
@@ -135,21 +136,21 @@ Table \ref{tab:multimetrics} has the results for the two training attempts with 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/confusion/res18fish_weights_cm_2026-05-08_13-10.png}
-    \caption{Confusion Matrix for the Res18 model trained to predict fish species.}
+    \caption{Confusion Matrix for the ResNet18 model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:res18weightsconf}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/roc/res18fish_weights_roc_2026-05-08_13-10.png}
-    \caption{ROC for the Res18 model trained to predict fish species.}
+    \caption{ROC for the ResNet18 model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:res18weightsroc}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/loss/res18fish_weights_loss_2026-05-08_13-10.png}
-    \caption{Loss Graph for the Res18 model trained to predict fish species.}
+    \caption{Loss Graph for the ResNet18 model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:res18weightsloss}
 \end{figure}
 
@@ -161,44 +162,44 @@ Table \ref{tab:multimetrics} has the results for the two training attempts with 
 
 \begin{figure}[!htpb]
 \centering
-\includegraphics[width=0.8\linewidth]{../results/confusion/res50fish_noweights_cm_2026-05-08_08-54.png}
-    \caption{Confusion Matrix for the res50 model trained to predict the fish species.}
+\includegraphics[width=0.8\linewidth]{../results/confusion/res50fish_noweights_cm_2026-05-11_14-24.png}
+    \caption{Confusion Matrix for the ResNet50 model initialized with blank weights trained to predict the fish species.}
 \label{fig:res50noweightsconf}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/roc/res50fish_noweights_roc_2026-05-08_08-54.png}
-    \caption{ROC for the res50 model trained to predict the fish species.}
+    \caption{ROC for the ResNet50 model initialized with blank weights trained to predict the fish species.}
 \label{fig:res50noweightsroc}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/loss/res50fish_noweights_loss_2026-05-08_08-54.png}
-    \caption{Loss Graph for the res50 model trained to predict the fish species.}
+    \caption{Loss Graph for the ResNet50 model initialized with blank weights trained to predict the fish species.}
 \label{fig:res50noweightsloss}
 \end{figure}
 
 
 \begin{figure}[!htpb]
 \centering
-\includegraphics[width=0.8\linewidth]{../results/confusion/res50fish_weights_cm_2026-05-08_09-31.png}
-    \caption{Confusion Matrix for the res50 model trained to predict fish species.}
+    \includegraphics[width=0.8\linewidth]{../results/confusion/res50fish_weights_cm_2026-05-11_13-10.png}
+    \caption{Confusion Matrix for the ResNet50 model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:res50weightsconf}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/roc/res50fish_weights_roc_2026-05-08_09-31.png}
-    \caption{ROC for the res50 model trained to predict fish species.}
+    \caption{ROC for the ResNet50 model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:res50weightsroc}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/loss/res50fish_weights_loss_2026-05-08_09-31.png}
-    \caption{Loss Graph for the res50 model trained to predict fish species.}
+    \caption{Loss Graph for the ResNet50 model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:res50weightsloss}
 \end{figure}
 
@@ -210,44 +211,44 @@ Table \ref{tab:multimetrics} has the results for the two training attempts with 
 
 \begin{figure}[!htpb]
 \centering
-\includegraphics[width=0.8\linewidth]{../results/confusion/DenseNetfish_noweights_cm_2026-05-08_11-24.png}
-    \caption{Confusion Matrix for the DenseNet model trained to predict the fish species.}
+\includegraphics[width=0.8\linewidth]{../results/confusion/DenseNetfish_noweights_cm_2026-05-11_15-16.png}
+    \caption{Confusion Matrix for the DenseNet model initialized with blank weights trained to predict the fish species.}
 \label{fig:DenseNetnoweightsconf}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/roc/DenseNetfish_noweights_roc_2026-05-08_11-24.png}
-    \caption{ROC for the DenseNet model trained to predict the fish species.}
+    \caption{ROC for the DenseNet model initialized with blank weights trained to predict the fish species.}
 \label{fig:DenseNetnoweightsroc}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/loss/DenseNetfish_noweights_loss_2026-05-08_11-24.png}
-    \caption{Loss Graph for the DenseNet model trained to predict the fish species.}
+    \caption{Loss Graph for the DenseNet model initialized with blank weights trained to predict the fish species.}
 \label{fig:DenseNetnoweightsloss}
 \end{figure}
 
 
 \begin{figure}[!htpb]
 \centering
-\includegraphics[width=0.8\linewidth]{../results/confusion/DenseNetfish_weights_cm_2026-05-08_10-32.png}
-    \caption{Confusion Matrix for the DenseNet model trained to predict fish species.}
+    \includegraphics[width=0.8\linewidth]{../results/confusion/DenseNetfish_weights_cm_2026-05-11_16-09.png}
+    \caption{Confusion Matrix for the DenseNet model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:DenseNetweightsconf}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/roc/DenseNetfish_weights_roc_2026-05-08_10-32.png}
-    \caption{ROC for the DenseNet model trained to predict fish species.}
+    \caption{ROC for the DenseNet model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:DenseNetweightsroc}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/loss/DenseNetfish_weights_loss_2026-05-08_10-32.png}
-    \caption{Loss Graph for the DenseNet model trained to predict fish species.}
+    \caption{Loss Graph for the DenseNet model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:DenseNetweightsloss}
 \end{figure}
 
@@ -259,43 +260,45 @@ Table \ref{tab:multimetrics} has the results for the two training attempts with 
 
 \begin{figure}[!htpb]
 \centering
-\includegraphics[width=0.8\linewidth]{../results/confusion/RegNetfish_noweights_cm_2026-05-08_12-04.png}
-    \caption{Confusion Matrix for the RegNet model trained to predict the fish species.}
+\includegraphics[width=0.8\linewidth]{../results/confusion/RegNetfish_noweights_cm_2026-05-12_08-17.png}
+    \caption{Confusion Matrix for the RegNet model initialized with blank weights trained to predict the fish species.}
 \label{fig:RegNetnoweightsconf}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/roc/RegNetfish_noweights_roc_2026-05-08_12-04.png}
-    \caption{ROC for the RegNet model trained to predict the fish species.}
+    \caption{ROC for the RegNet model initialized with blank weights trained to predict the fish species.}
 \label{fig:RegNetnoweightsroc}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/loss/RegNetfish_noweights_loss_2026-05-08_12-04.png}
-    \caption{Loss Graph for the RegNet model trained to predict the fish species.}
+    \caption{Loss Graph for the RegNet model initialized with blank weights trained to predict the fish species.}
 \label{fig:RegNetnoweightsloss}
 \end{figure}
 
 
 \begin{figure}[!htpb]
 \centering
-\includegraphics[width=0.8\linewidth]{../results/confusion/RegNetfish_weights_cm_2026-05-08_12-28.png}
-    \caption{Confusion Matrix for the RegNet model trained to predict fish species.}
+\includegraphics[width=0.8\linewidth]{../results/confusion/RegNetfish_weights_cm_2026-05-12_08-37.png}
+    \caption{Confusion Matrix for the RegNet utilizing transfer learning that was model trained to predict fish species.}
 \label{fig:RegNetweightsconf}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/roc/RegNetfish_weights_roc_2026-05-08_12-28.png}
-    \caption{ROC for the RegNet model trained to predict fish species.}
+    \caption{ROC for the RegNet model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:RegNetweightsroc}
 \end{figure}
 
 \begin{figure}[!htpb]
 \centering
 \includegraphics[width=0.8\linewidth]{../results/loss/RegNetfish_weights_loss_2026-05-08_12-28.png}
-    \caption{Loss Graph for the RegNet model trained to predict fish species.}
+    \caption{Loss Graph for the RegNet model utilizing transfer learning that was trained to predict fish species.}
 \label{fig:RegNetweightsloss}
 \end{figure}
+
+\newpage
