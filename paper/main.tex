@@ -3,16 +3,40 @@
 % Load packages/settings from a separate file
 \input{preamble}
 
-\title{CSC648 - Fish Detection Class Project}
-\author{Nicholas Moran}
-\date{\today}
 
 \begin{document}
-    \maketitle
+    \begin{titlepage}
+      \centering
+      {\Huge University of Southern Mississippi\par}
+      \vspace{2cm}
+
+      {\Huge\bfseries CSC648 - Fish Detection Class Project\par}
+      \vspace{1.5cm}
+
+      {\Huge Nicholas Moran\par}
+      \vspace{0.5cm}
+      {\Huge Ogadinma Njoku\par}
+      \vspace{0.5cm}
+
+      {\large \today \par}
+      \vfill
+    \end{titlepage}
+
+    \tableofcontents
+    
+    \newpage
 
     % Include section files
     \input{sections/introduction}
-    \input{sections/technical}
+    \input{sections/review}
+    \input{sections/data}
+    \input{sections/methodology}
+    \input{sections/results}
     \input{sections/discussion}
+    \input{sections/conclusions}
+    \input{sections/appendix}
+
+    \bibliographystyle{plain}   
+    \bibliography{refs}
 
 \end{document}

@@ -1,1 +1,10 @@
 venv
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.pdf
+*.toc
+*.bib
+*.DS_Store

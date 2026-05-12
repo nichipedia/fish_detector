@@ -1,0 +1,87 @@
+\section{Data Description and Processing}
+The dataset for this project is broken into test, validate, and train sections. Total contains 10,000 images of fish that are stored in full HD 1920 by 1080 resolution. A stratified splitting method was used to maintain the proportion of samples of each class in the Validate, test, and train portions. The below table represents the sample count in the training dataset, but the percentage will give a basis on what each looks like in the other two portions relative to other classes. The Fish 1
+class represents the largest portion of the data repesenting a actual fish. It is twice as large as the second class.
+However, the no fish class makes up the biggest portion of the dataset with 57\% of the total.
+
+
+\begin{figure}[!htpb]
+\centering
+\includegraphics[width=0.8\linewidth]{./graphics/fish_example.jpg}
+    \caption{Example image of Caranx Sexfasciatus fish from the dataset.}
+\label{graphic:fishexample}
+\end{figure}
+
+
+
+
+\begin{table}[!ht]
+    \centering
+    \begin{tabular}{lrr}
+        \hline
+        Class & Sample Count & Percentage \\
+        \hline
+        Gerres                    & 73   & 2\%   \\
+        Acanthopagrus             & 289  & 8\%   \\
+        Acanthopagus and Caranx   & 80   & 2\%   \\
+        Caranx Adult              & 90   & 3\%   \\
+        Caranx Juvenile           & 298  & 9\%   \\
+        Amniataba                 & 6    & 0.1\% \\
+        Chaetodon                 & 43   & 1\%   \\
+        Epinephelus               & 45   & 1\%   \\
+        Lutjanus                  & 89   & 3\%   \\
+        Fish 1                    & 1062 & 30\%  \\
+        Fish 2                    & 571  & 16\%  \\
+        Fish 3                    & 226  & 6\%   \\
+        Fish 4                    & 427  & 12\%  \\
+        Fish 5                    & 109  & 3\%   \\
+        Fish 6                    & 93   & 3\%   \\
+        \hline
+    \end{tabular}
+    \caption{Sample counts and percentages for each fish class.}
+    \label{tab:fish_classes}
+\end{table}
+
+Table \ref{tab:fish_no_fish} represents the percentage of fish samples and no fish samples. No fish has a 14\% higher representation in the training data.  
+
+\begin{table}[!ht]
+    \centering
+    \begin{tabular}{lrr}
+        \hline
+        Class  & Sample Count & Percentage \\
+        \hline
+        Fish    & 3504 & 43\% \\
+        No Fish & 4498 & 57\% \\
+        \hline
+    \end{tabular}
+    \caption{Sample counts and percentages for Fish vs. No Fish.}
+    \label{tab:fish_no_fish}
+\end{table}
+
+
+Edits were made to the dataset to make development easier. Two new datasets were created. A dataset where fish and no-fish directories were copied to a new positive and negative dataset. Another was created where each individual class was copied to a folder containing its samples. This was done to utilize the image loader from PyTorch which will automatically assign labels based on the folder names. Table \ref{tab:fish_classes} describes the classes that were created. A no fish class was also
+for the multiclassification problem.
+A link for downloading the prepared dataset used in this project can be downloaded from the appendix section.
+
+The linux command line was used to do data analysyis. Below is the command used to determine unique classes.
+
+\begin{lstlisting}[language=bash]
+ll | sed -E 's/^[^_]+_[^_]+_[^_]+_([^_].*)_f[0-9]+\.jpg$/\1/' | sort | uniq
+\end{lstlisting}
+
+The above command was piped to a file and used as input to a bash script to copy images to class folders
+
+\begin{lstlisting}[language=python]
+for class in $(< /home/nmoran/Documents/python/fish_detector/classes.txt); do
+    mkdir -p "/home/nmoran/Downloads/multi_test/$class"
+    find . -type f -name "*$class*" -exec cp -n {} "/home/nmoran/Downloads/multi_test/$class/" \;
+done
+\end{lstlisting}
+
+This was extended to determine class count for example:
+
+
+\begin{lstlisting}[language=bash]
+ll | sed -E 's/^[^_]+_[^_]+_[^_]+_([^_].*)_f[0-9]+\.jpg$/\1/' | grep -i F6 | wc -l
+\end{lstlisting}
+
+
